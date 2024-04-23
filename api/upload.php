@@ -1,44 +1,52 @@
 <?php
-$output = [];
 
-if (isset($_FILES['images'])) {
-    $images = $_FILES['images'];
-    foreach ($images['tmp_name'] as $key => $tmp_name) {
-        $name = $images['name'][$key];
-        $size = $images['size'][$key];
-        $type = $images['type'][$key];
-        $error = $images['error'][$key];
+$errores = [];
 
-        if ($error !== UPLOAD_ERR_OK) {
-            $output[] = "Error uploading file: $name";
-            continue;
-        }
+if (isset($_FILES['imagen'])) {
+    $archivo = $_FILES['imagen'];
 
-        // Check file type
-        $allowedTypes = ['image/png', 'image/jpeg'];
-        if (!in_array($type, $allowedTypes)) {
-            $output[] = "Invalid file type: $name";
-            continue;
-        }
+    // Validar formato (PNG o JPG)
+    $extension = pathinfo($archivo['name'], PATHINFO_EXTENSION);
+    $extensionesValidas = ['png', 'jpg'];
 
-        // Check file size
-        if ($size > 5 * 1024 * 1024) {
-            $output[] = "File size exceeds 5MB limit: $name";
-            continue;
-        }
-
-        // Convert image to webp
-        $webpName = pathinfo($name, PATHINFO_FILENAME) . '.webp';
-        $webpPath = 'converted/' . $webpName;
-        if (!move_uploaded_file($tmp_name, $webpPath)) {
-            $output[] = "Error converting file to webp: $name";
-            continue;
-        }
-
-        $output[] = $webpPath;
+    if (!in_array($extension, $extensionesValidas)) {
+        $errores[] = "El formato de la imagen no es válido (solo PNG o JPG)";
     }
+
+    // Validar tamaño (máximo 5 MB)
+    if ($archivo['size'] > 5 * 1024 * 1024) {
+        $errores[] = "La imagen supera el tamaño máximo (5 MB)";
+    }
+
+    if (empty($errores)) {
+        // Convertir imagen a WebP
+        $nombreOriginal = $archivo['name'];
+        $nombreTemporal = $archivo['tmp_name'];
+        $nombreWebP = uniqid() . '.webp';
+        $rutaDestino = 'A.i_saas/converted/' . $nombreWebP;
+
+        if (gd_imagewebp($nombreTemporal, $rutaDestino)) {
+            $datosImagen = [
+                'exito' => true,
+                'imagen' => [
+                    'url' => $rutaDestino,
+                    'nombreOriginal' => $nombreOriginal
+                ]
+            ];
+        } else {
+            $errores[] = "Error al convertir la imagen a WebP";
+        }
+    } else {
+        $datosImagen = [
+            'exito' => false,
+            'error' => implode(', ', $errores)
+        ];
+    }
+} else {
+    $datosImagen = [
+        'exito' => false,
+        'error' => 'No se ha enviado ninguna imagen'
+    ];
 }
 
-header('Content-Type: application/json');
-echo json_encode($output);
-?>
+echo json_encode($datosImagen);

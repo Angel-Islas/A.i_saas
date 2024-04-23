@@ -1,16 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Converter</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Subida y conversión de imágenes</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Image Converter</h1>
-    <input type="file" id="fileInput" multiple accept=".png, .jpg">
-    <button onclick="uploadImages()">Upload Images</button>
-    <div id="output"></div>
+    <h1>Subir y convertir imágenes a WebP</h1>
+
+    <form id="formularioImagenes">
+        <input type="file" id="imagenes" name="imagenes[]" multiple accept=".jpg,.png">
+        <button type="submit">Subir y convertir</button>
+    </form>
+
+    <div id="contenedorImagenes"></div>
+
     <script src="script.js"></script>
 </body>
 </html>
